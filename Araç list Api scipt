@@ -1,0 +1,60 @@
+
+function doGet(e) {
+  try {
+    const SHEET_NAME = "Vehicles"; // <-- BURAYI DEĞİŞTİR
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(SHEET_NAME);
+
+    if (!sheet) {
+      return jsonOutput({
+        success: false,
+        error: "Sheet bulunamadı: " + SHEET_NAME
+      });
+    }
+
+    const lastRow = sheet.getLastRow();
+
+    if (lastRow < 2) {
+      return jsonOutput({
+        success: true,
+        count: 0,
+        data: []
+      });
+    }
+
+    // Sadece A:H arası veriler
+    const values = sheet.getRange(2, 1, lastRow - 1, 8).getValues();
+
+    const data = values
+      .filter(row => row.some(cell => String(cell).trim() !== ""))
+      .map(row => ({
+        kayit_no: row[0],
+        sase_no: row[1],
+        plaka: row[2],
+        marka: row[3],
+        model: row[4],
+        model_yili: row[5],
+        KM: row[6],
+        kira_fiyati_gunluk: row[7]
+      }));
+
+    return jsonOutput({
+      success: true,
+      count: data.length,
+      data: data
+    });
+
+  } catch (err) {
+    return jsonOutput({
+      success: false,
+      error: String(err)
+    });
+  }
+}
+
+function jsonOutput(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
