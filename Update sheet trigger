@@ -1,0 +1,82 @@
+function onFormSubmit(e) {
+  const VEHICLE_SHEET_NAME = "Vehicles";
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const vehicleSheet = ss.getSheetByName(VEHICLE_SHEET_NAME);
+
+  if (!vehicleSheet) {
+    throw new Error("Vehicles sheet bulunamadı: " + VEHICLE_SHEET_NAME);
+  }
+
+  const values = e.namedValues;
+
+  function getValue(possibleKeys) {
+    for (const key of possibleKeys) {
+      if (values[key] && values[key][0] !== undefined) {
+        return String(values[key][0]).trim();
+      }
+    }
+    return "";
+  }
+
+  const isim = getValue(["İsim", "isim", "Ad", "ad"]);
+  const soyisim = getValue(["Soyisim", "soyisim", "Soyad", "Soyadı", "soyad", "soyadı"]);
+  const tcNo = getValue(["TC No", "T.C. No", "TC", "Tc No"]);
+  const email = getValue(["E-mail", "Email", "E posta", "E-posta"]);
+  const baslangic = getValue(["Sözleşme Başlangıç Tarihi"]);
+  const bitis = getValue(["Sözleşme Bitiş Tarihi"]);
+  const secilenAraclar = getValue(["Seçilen Araçlar"]);
+
+  if (!secilenAraclar) {
+    throw new Error("Seçilen Araçlar alanı boş.");
+  }
+
+  const plakalar = secilenAraclar
+    .split(/,|\n/)
+    .map(item => item.trim())
+    .filter(Boolean)
+    .map(item => item.split(" - ")[0].trim());
+
+  if (plakalar.length === 0) {
+    throw new Error("Seçilen Araçlar içinden plaka çıkarılamadı.");
+  }
+
+  const data = vehicleSheet.getDataRange().getValues();
+  const headers = data[0];
+
+  const colMap = {};
+  headers.forEach((h, i) => {
+    colMap[String(h).trim()] = i + 1;
+  });
+
+  const requiredColumns = [
+    "plaka",
+    "musteri_adi",
+    "musteri_soyadi",
+    "Müşteri TC",
+    "musteri_e-mail",
+    "sozlesme_baslangic",
+    "sozlesme_bitis",
+    "sözleşme_durumu"
+  ];
+
+  requiredColumns.forEach(col => {
+    if (!colMap[col]) {
+      throw new Error("Vehicles sheet içinde eksik kolon var: " + col);
+    }
+  });
+
+  for (let r = 2; r <= data.length; r++) {
+    const plaka = String(data[r - 1][colMap["plaka"] - 1] || "").trim();
+
+    if (plakalar.includes(plaka)) {
+      vehicleSheet.getRange(r, colMap["musteri_adi"]).setValue(isim);
+      vehicleSheet.getRange(r, colMap["musteri_soyadi"]).setValue(soyisim);
+      vehicleSheet.getRange(r, colMap["Müşteri TC"]).setValue(tcNo);
+      vehicleSheet.getRange(r, colMap["musteri_e-mail"]).setValue(email);
+      vehicleSheet.getRange(r, colMap["sozlesme_baslangic"]).setValue(baslangic);
+      vehicleSheet.getRange(r, colMap["sozlesme_bitis"]).setValue(bitis);
+      vehicleSheet.getRange(r, colMap["sözleşme_durumu"]).setValue("Dolu");
+    }
+  }
+}
