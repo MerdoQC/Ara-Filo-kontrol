@@ -1,0 +1,570 @@
+/*api deployment link, entry no of the google forms and google form responder link will be adapted*/
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vehicle List</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #1f1f1f;
+    }
+
+    .container {
+      max-width: 1380px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      margin: 0 0 24px 0;
+      font-size: 44px;
+      font-weight: 700;
+    }
+
+    .top-section {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: flex-end;
+      background: #f8f9fb;
+      border: 1px solid #e3e6ea;
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      min-width: 220px;
+      flex: 1;
+    }
+
+    .filter-group label {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #444;
+    }
+
+    .filter-group input,
+    .filter-group select {
+      height: 44px;
+      padding: 10px 14px;
+      border: 1px solid #cfd6dd;
+      border-radius: 10px;
+      font-size: 15px;
+      background: #fff;
+      outline: none;
+    }
+
+    .filter-group input:focus,
+    .filter-group select:focus {
+      border-color: #4a6fe3;
+      box-shadow: 0 0 0 3px rgba(74, 111, 227, 0.12);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      color: white;
+      transition: 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-blue {
+      background: #4a6fe3;
+    }
+
+    .btn-gray {
+      background: #7b838f;
+    }
+
+    .btn-green {
+      background: #4d8d5b;
+    }
+
+    .btn-orange {
+      background: #d98b2b;
+    }
+
+    .message {
+      padding: 14px;
+      border-radius: 10px;
+      margin-bottom: 14px;
+      font-size: 15px;
+    }
+
+    .loading {
+      background: #e8f0ff;
+      color: #2456c7;
+    }
+
+    .error {
+      background: #fdeaea;
+      color: #a33;
+    }
+
+    .info {
+      background: #eef3f7;
+      color: #445;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 12px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 1100px;
+      border-collapse: collapse;
+      background: #fff;
+      margin-top: 8px;
+    }
+
+    th,
+    td {
+      border: 1px solid #e2e5e9;
+      padding: 10px 12px;
+      text-align: left;
+      white-space: nowrap;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f1f3f5;
+      font-weight: 700;
+    }
+
+    tr:hover {
+      background: #f8fbff;
+    }
+
+    .selected-box {
+      margin-top: 24px;
+      background: #fafafa;
+      border: 1px solid #d9d9d9;
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    .selected-box h2 {
+      margin: 0 0 12px 0;
+      font-size: 22px;
+    }
+
+    .selected-item {
+      margin-bottom: 8px;
+    }
+
+    .next-btn {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 999;
+      border: none;
+      border-radius: 999px;
+      padding: 14px 24px;
+      font-size: 16px;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      background: linear-gradient(135deg, #4a6fe3, #6f8cff);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+      transition: 0.2s ease;
+    }
+
+    .next-btn:hover {
+      transform: translateY(-2px) scale(1.03);
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 32px;
+      }
+
+      .filter-group {
+        min-width: 100%;
+      }
+
+      .next-btn {
+        right: 16px;
+        bottom: 16px;
+        padding: 12px 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Vehicle List</h1>
+
+    <div class="top-section">
+      <div class="filters">
+        <div class="filter-group">
+          <label for="markaFilter">Marka</label>
+          <select id="markaFilter" onchange="applyFilters()">
+            <option value="">Tümü</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="modelFilter">Model</label>
+          <select id="modelFilter" onchange="applyFilters()">
+            <option value="">Tümü</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="plakaFilter">Plaka</label>
+          <input
+            type="text"
+            id="plakaFilter"
+            placeholder="Plaka ara..."
+            oninput="applyFilters()"
+          />
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button class="btn-blue" onclick="loadVehicles()">Verileri Yenile</button>
+        <button class="btn-gray" onclick="selectAll()">Tümünü Seç</button>
+        <button class="btn-gray" onclick="clearAll()">Seçimi Temizle</button>
+        <button class="btn-green" onclick="showSelected()">Seçilenleri Göster</button>
+        <button class="btn-orange" onclick="resetFilters()">Filtreleri Temizle</button>
+      </div>
+    </div>
+
+    <div id="status"></div>
+    <div id="resultInfo"></div>
+
+    <div class="table-wrapper">
+      <table id="vehicleTable" style="display:none;">
+        <thead>
+          <tr>
+            <th>Seç</th>
+            <th>kayıt_no</th>
+            <th>şase_no</th>
+            <th>plaka</th>
+            <th>marka</th>
+            <th>model</th>
+            <th>model_yılı</th>
+            <th>KM</th>
+            <th>kira_fiyatı_günlük</th>
+          </tr>
+        </thead>
+        <tbody id="vehicleBody"></tbody>
+      </table>
+    </div>
+
+    <div class="selected-box">
+      <h2>Seçilen Araçlar</h2>
+      <div id="selectedOutput">Henüz seçim yapılmadı.</div>
+    </div>
+  </div>
+
+  <button class="next-btn" onclick="goToForm()">Next →</button>
+
+  <script>
+    // =========================
+    // DEĞİŞTİRİLECEK ALANLAR
+    // =========================
+    const API_URL = "https://script.google.com/macros/s/AKfycbw0NiwY451EmnjshoMsFgqlOiYSscMUQ417IpvagceGTg2uoMycOn9QsaiPrHD9uTRw/exec";
+
+    // Prefilled form linkinin temel hali
+    // Örnek:
+    // https://docs.google.com/forms/d/e/FORM_ID/viewform?usp=pp_url
+    const FORM_BASE_URL = "https://docs.google.com/forms/d/e/1FAIpQLSf7R_lW7QIEPJw4HSZYkYOFEvu99GTC4HLsqxVfxAWOBV7MdQ/viewform?usp=dialog";
+
+    // Google Form içindeki "Seçilen Araçlar" alanının entry ID'si
+    // Örnek: entry.123456789
+    const FORM_SELECTED_VEHICLES_ENTRY = "entry.909003291";
+    // =========================
+
+    let vehicleData = [];
+    let filteredData = [];
+    let selectedPlates = new Set();
+
+    async function loadVehicles() {
+      const status = document.getElementById("status");
+      const table = document.getElementById("vehicleTable");
+      const body = document.getElementById("vehicleBody");
+
+      status.innerHTML = '<div class="message loading">Veriler yükleniyor...</div>';
+      body.innerHTML = "";
+      table.style.display = "none";
+
+      try {
+        const response = await fetch(API_URL, { method: "GET" });
+        const text = await response.text();
+
+        let result;
+        try {
+          result = JSON.parse(text);
+        } catch (err) {
+          throw new Error("API JSON dönmedi. Gelen cevap: " + text);
+        }
+
+        if (!result.success) {
+          throw new Error(result.error || "Bilinmeyen API hatası");
+        }
+
+        vehicleData = Array.isArray(result.data) ? result.data : [];
+        filteredData = [...vehicleData];
+
+        fillFilterOptions();
+        renderTable(filteredData);
+
+        status.innerHTML = "";
+
+      } catch (error) {
+        console.error(error);
+        status.innerHTML = `<div class="message error">Bağlantı hatası: ${escapeHtml(error.message)}</div>`;
+      }
+    }
+
+    function fillFilterOptions() {
+      const markaSelect = document.getElementById("markaFilter");
+      const modelSelect = document.getElementById("modelFilter");
+
+      const currentMarka = markaSelect.value;
+      const currentModel = modelSelect.value;
+
+      const markaList = [...new Set(
+        vehicleData
+          .map(v => normalizeText(v.marka))
+          .filter(Boolean)
+      )].sort((a, b) => a.localeCompare(b, "tr"));
+
+      const modelList = [...new Set(
+        vehicleData
+          .map(v => normalizeText(v.model))
+          .filter(Boolean)
+      )].sort((a, b) => a.localeCompare(b, "tr"));
+
+      markaSelect.innerHTML = '<option value="">Tümü</option>';
+      modelSelect.innerHTML = '<option value="">Tümü</option>';
+
+      markaList.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item;
+        option.textContent = item;
+        markaSelect.appendChild(option);
+      });
+
+      modelList.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item;
+        option.textContent = item;
+        modelSelect.appendChild(option);
+      });
+
+      markaSelect.value = currentMarka;
+      modelSelect.value = currentModel;
+    }
+
+    function renderTable(data) {
+      const table = document.getElementById("vehicleTable");
+      const body = document.getElementById("vehicleBody");
+      const resultInfo = document.getElementById("resultInfo");
+
+      body.innerHTML = "";
+
+      if (!data.length) {
+        table.style.display = "none";
+        resultInfo.innerHTML = '<div class="message info">Filtreye uygun araç bulunamadı.</div>';
+        updateSelected();
+        return;
+      }
+
+      data.forEach(item => {
+        const plaka = String(item.plaka || "");
+        const checked = selectedPlates.has(plaka) ? "checked" : "";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>
+            <input
+              type="checkbox"
+              class="row-check"
+              data-plaka="${escapeHtml(plaka)}"
+              ${checked}
+              onchange="toggleSelection(this)"
+            />
+          </td>
+          <td>${escapeHtml(item.kayit_no ?? "")}</td>
+          <td>${escapeHtml(item.sase_no ?? "")}</td>
+          <td>${escapeHtml(item.plaka ?? "")}</td>
+          <td>${escapeHtml(item.marka ?? "")}</td>
+          <td>${escapeHtml(item.model ?? "")}</td>
+          <td>${escapeHtml(item.model_yili ?? "")}</td>
+          <td>${escapeHtml(item.KM ?? "")}</td>
+          <td>${escapeHtml(item.kira_fiyati_gunluk ?? "")}</td>
+        `;
+        body.appendChild(tr);
+      });
+
+      resultInfo.innerHTML = `<div class="message info">Toplam <strong>${data.length}</strong> araç gösteriliyor.</div>`;
+      table.style.display = "table";
+      updateSelected();
+    }
+
+    function applyFilters() {
+      const marka = document.getElementById("markaFilter").value.toLowerCase().trim();
+      const model = document.getElementById("modelFilter").value.toLowerCase().trim();
+      const plaka = document.getElementById("plakaFilter").value.toLowerCase().trim();
+
+      filteredData = vehicleData.filter(item => {
+        const itemMarka = String(item.marka || "").toLowerCase().trim();
+        const itemModel = String(item.model || "").toLowerCase().trim();
+        const itemPlaka = String(item.plaka || "").toLowerCase().trim();
+
+        const markaMatch = !marka || itemMarka === marka;
+        const modelMatch = !model || itemModel === model;
+        const plakaMatch = !plaka || itemPlaka.includes(plaka);
+
+        return markaMatch && modelMatch && plakaMatch;
+      });
+
+      renderTable(filteredData);
+    }
+
+    function resetFilters() {
+      document.getElementById("markaFilter").value = "";
+      document.getElementById("modelFilter").value = "";
+      document.getElementById("plakaFilter").value = "";
+      filteredData = [...vehicleData];
+      renderTable(filteredData);
+    }
+
+    function toggleSelection(checkbox) {
+      const plaka = checkbox.dataset.plaka;
+
+      if (checkbox.checked) {
+        selectedPlates.add(plaka);
+      } else {
+        selectedPlates.delete(plaka);
+      }
+
+      updateSelected();
+    }
+
+    function getSelectedVehicles() {
+      return vehicleData.filter(item => selectedPlates.has(String(item.plaka || "")));
+    }
+
+    function updateSelected() {
+      const selected = getSelectedVehicles();
+      const output = document.getElementById("selectedOutput");
+
+      if (!selected.length) {
+        output.innerHTML = "Henüz seçim yapılmadı.";
+        return;
+      }
+
+      output.innerHTML = selected.map(item => {
+        return `
+          <div class="selected-item">
+            <strong>${escapeHtml(item.plaka ?? "")}</strong>
+            - ${escapeHtml(item.marka ?? "")} ${escapeHtml(item.model ?? "")}
+            - ${escapeHtml(item.model_yili ?? "")}
+          </div>
+        `;
+      }).join("");
+    }
+
+    function showSelected() {
+      const selected = getSelectedVehicles();
+      updateSelected();
+      alert(selected.length + " araç seçildi.");
+    }
+
+    function selectAll() {
+      filteredData.forEach(item => {
+        selectedPlates.add(String(item.plaka || ""));
+      });
+      renderTable(filteredData);
+    }
+
+    function clearAll() {
+      filteredData.forEach(item => {
+        selectedPlates.delete(String(item.plaka || ""));
+      });
+      renderTable(filteredData);
+    }
+
+    function goToForm() {
+      const selected = getSelectedVehicles();
+
+      if (!selected.length) {
+        alert("Lütfen en az 1 araç seç.");
+        return;
+      }
+
+      const selectedVehiclesText = selected
+        .map(item => {
+          const plaka = item.plaka || "";
+          const marka = item.marka || "";
+          const model = item.model || "";
+          const yil = item.model_yili || "";
+          return `${plaka} - ${marka} ${model} - ${yil}`;
+        })
+        .join("\n");
+
+      const finalUrl =
+        `${FORM_BASE_URL}` +
+        `&${FORM_SELECTED_VEHICLES_ENTRY}=${encodeURIComponent(selectedVehiclesText)}`;
+
+      window.open(finalUrl, "_blank");
+    }
+
+    function normalizeText(value) {
+      return String(value || "").trim();
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    loadVehicles();
+  </script>
+</body>
+</html>
